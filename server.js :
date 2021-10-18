@@ -1,0 +1,17 @@
+'use strict';
+
+const express = require('express');
+
+// Constants
+const PORT = 8000;
+const HOST = '0.0.0.0';
+
+// App
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.listen(PORT, HOST);
+console.log();
+As you can see, this application simply runs a small web app that returns the message, "Hello World", when run.
