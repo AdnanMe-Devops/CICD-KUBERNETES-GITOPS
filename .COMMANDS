@@ -1,0 +1,103 @@
+kubectl apply -f config.yaml 
+
+
+sudo yum install -y socat
+kubectl -n kube-system create sa tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+This server comes pre-installed with Helm, which is a package manager for Kubernetes. Helm will make it much easier to set up Flux for your pipeline. The first command you used installs socat, which is a Linux program needed for Helm to work with the rest of the pipeline. The next two commands set up and configure Tiller, which is Helm's server-side component, and which will allow Helm to interact with your Kubernetes server.
+
+ Initialize Helm with the following command:
+
+
+1
+helm init --service-account tiller --history-max 200 --stable-repo-url https://charts.helm.sh/stable --tiller-image ghcr.io/helm/tiller:v2.1
+
+helm version
+
+Next, begin the Flux installation by installing the Flux Custom Resource Definition:
+
+
+1
+kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
+
+With the Flux repository set up in Helm and the Kubernetes configuration repo saved to a variable, install Flux and configure it to use the repository:
+
+helm repo add fluxcd https://charts.fluxcd.io
+helm upgrade -i flux \
+  --set helmOperator.create=true \
+  --set helmOperator.createCRD=false \
+  --set git.url=$origin_url \
+  --namespace flux fluxcd/flux
+
+kubectl get pods -n flux
+
+Add some directories to  new repository for organization:
+
+
+cd /cloud/k8s-config
+mkdir namespaces workloads
+
+Create a file to manage a separate namespace for your application:
+
+cat << EOF > namespaces/flux-example.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: flux-example
+  name: flux-example
+EOF
+
+Grab  AWS Account ID:
+
+
+aws sts get-caller-identity
+Save the Account value for later.
+
+ 
+
+11. Save AWS account ID to a variable, to be used with the next command:
+
+account_id=$(aws sts get-caller-identity --query "Account" | sed -e 's/^"//' -e 's/"$//')
+
+
+Create a file to manage a separate namespace for your application:
+
+cat << EOF > namespaces/flux-example.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: flux-example
+  name: flux-example
+EOF
+
+Grab your AWS Account ID:
+
+
+aws sts get-caller-identity
+Save the Account value for later.
+
+ 
+
+11. Save your AWS account ID to a variable, to be used with the next command:
+
+
+account_id=$(aws sts get-caller-identity --query "Account" | sed -e 's/^"//' -e 's/"$//')
+
+
+With files to manage your separate namespace and a deployment within that namespace, commit your changes and push them to your Git repository:
+
+after config flux deployment yaml file
+
+git add .
+git commit -m "First commit"
+git push origin master
+ 
+Using the name of the Flux pod that you saved earlier, grab the logs for the pod to confirm that a change was triggered in Flux:
+
+
+kubectl logs flux-<RANDOM-NUMBER-FIRST-POD> -n flux --follow | grep apply
+
+cd /cloudacademy/k8s-config
+git pull
