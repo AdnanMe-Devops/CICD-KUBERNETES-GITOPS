@@ -1,0 +1,34 @@
+cat << EOF > workloads/flux-example-dep.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp1
+  namespace: flux-example
+  labels:
+    app: webapp1
+  annotations:
+  # Container Image Automated Updates
+    flux.weave.works/automated: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: $account_id.dkr.ecr.us-west-2.amazonaws.com/web-app:1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          hostPort: 8000
+          name: http
+          protocol: TCP
+  strategy:
+    type: Recreate
+EOF
