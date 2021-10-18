@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: 843594155831.dkr.ecr.us-west-2.amazonaws.com/web-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          hostPort: 80
